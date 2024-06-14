@@ -12,18 +12,25 @@ SHAPES = [
     np.array([[1, 1, 1], [0, 0, 1]])   # J
 ]
 
+#Cell height = 15
+#Added height variable to uh yeah u know(If you don't it's for the line below the QR Code)
 class Tetromino:
     def __init__(self, shape, x, y):
         self.shape = shape
         self.x = x
         self.y = y
-
+        self.update_height()
+    
+    def update_height(self):
+        self.height = self.shape.shape[0] * 15 
+    
     def move(self, dx, dy):
         self.x += dx
         self.y += dy
 
     def rotate(self):
         self.shape = np.rot90(self.shape)
+        self.update_height()
 
     def draw(self, surface, color=(255, 255, 255)):
         for y, row in enumerate(self.shape):
