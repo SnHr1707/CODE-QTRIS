@@ -1,6 +1,6 @@
 import pygame
 import sys
-from qtromino import Tetromino, SHAPES
+from qtromino import *
 from qr_code import generate_qr_code
 import random
 
@@ -8,13 +8,10 @@ import random
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 500, 800
+TILE_SIZE = 20  # Assuming TILE_SIZE is 20, adjust accordingly
+WIDTH, HEIGHT = 20, 30
 BG_COLOR = (0, 0, 0)
 FPS = 60
-
-# Set up display
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption('CODE QTRIS')
 
 # Generate and load QR code
 generate_qr_code('https://example.com')
@@ -22,22 +19,28 @@ qr_code_img = pygame.image.load("assets/qr_code.png")
 
 # Resize QR code to fit within the screen dimensions
 qr_code_width, qr_code_height = qr_code_img.get_size()
-scale_factor = min(WIDTH / qr_code_width, HEIGHT / qr_code_height)
+
+# Calculate scale factor and resize the QR code image
+scale_factor = min(WIDTH * TILE_SIZE / qr_code_width, HEIGHT * TILE_SIZE / qr_code_height)
 new_size = (int(qr_code_width * scale_factor), int(qr_code_height * scale_factor))
 qr_code_img = pygame.transform.scale(qr_code_img, new_size)
 
 # Position the QR code in the middle, slightly lower
-qr_code_x = (WIDTH - new_size[0]) // 2
-qr_code_y = (HEIGHT - new_size[1]) // 2 + 50  # Adjust the +50 value as needed to position it lower
+qr_code_x = (WIDTH * TILE_SIZE - new_size[0]) // 2
+qr_code_y = (HEIGHT * TILE_SIZE - new_size[1]) // 2 + 50  # Adjust the +50 value as needed to position it lower
 
-#The bottom of the QR Code
-qr_code_bottom_y = qr_code_y + new_size[1] - 60 #idk why but can't figure out the 60
+# The bottom of the QR Code
+qr_code_bottom_y = qr_code_y + new_size[1] - 60  # idk why but can't figure out the 60
+
+# Set up display
+screen = pygame.display.set_mode((WIDTH * TILE_SIZE, HEIGHT * TILE_SIZE))
+pygame.display.set_caption('CODE QTRIS')
 
 # Create Tetromino
 current_tetromino = Tetromino(random.choice(SHAPES), WIDTH // 2, 0)
 
-BASE_MOVE_SPEED = 15  # Pixels per second
-BOOSTED_MOVE_SPEED = 15  # Pixels per second when down arrow is pressed
+BASE_MOVE_SPEED = TILE_SIZE  # Pixels per second
+BOOSTED_MOVE_SPEED = TILE_SIZE  # Pixels per second when down arrow is pressed
 MOVE_DELAY = 1000  # milliseconds
 
 # Variables for continuous movement
@@ -46,7 +49,7 @@ move_right = False
 move_down = False
 move_timer = 0
 
-#Randomly selects Shape
+# Randomly selects Shape
 def create_new_tetromino():
     return Tetromino(random.choice(SHAPES), WIDTH // 2, 0)
 
@@ -72,9 +75,9 @@ while running:
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 move_left = False
-            elif event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_RIGHT:
                 move_right = False
-            elif event.key == pygame.K_DOWN:
+            if event.key == pygame.K_DOWN:
                 move_down = False
 
     # Automatic downward movement
@@ -86,11 +89,11 @@ while running:
     if move_down:
         current_tetromino.move(0, BASE_MOVE_SPEED * (MOVE_DELAY / 1000))
     
-    #Normal left and right movement
-    elif move_left:
+    # Normal left and right movement
+    if move_left:
         current_tetromino.move(-BASE_MOVE_SPEED * (MOVE_DELAY / 1000), 0)
         
-    elif move_right:
+    if move_right:
         current_tetromino.move(BASE_MOVE_SPEED * (dt / 1000), 0)
 
     # Check if Tetromino has reached the bottom line of QR code
@@ -107,6 +110,9 @@ while running:
     
     # Draw QR code background
     screen.blit(qr_code_img, (qr_code_x, qr_code_y))
+
+    # Draw grid
+    draw_grid(screen, WIDTH*TILE_SIZE, HEIGHT*TILE_SIZE)
 
     # Draw current Tetromino
     current_tetromino.draw(screen)
